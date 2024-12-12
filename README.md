@@ -40,6 +40,6 @@ make build
 - [ ] 支持飞书app，使用飞书群机器人来推送消息，飞书支持更多的消息类型和更多的消息条数
 - [ ] Mac 适配，但是没有 Mac，这个怎么弄啊...
 
-## 感谢
+## 资源
 - [Server酱](https://sct.ftqq.com/) 微信推送
 - [CURSOR](https://www.cursor.com/) The AI Code Editor
