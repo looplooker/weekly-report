@@ -2,59 +2,92 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 func getCommit(paths string, command string) string {
 	pathList := strings.Fields(paths)
-	// 使用 map 来存储唯一的提交信息
 	uniqueResults := make(map[string]bool)
 	var results []string
 
 	for _, path := range pathList {
-		cmdArgs := parseGitCommand(command)
+		var projectPaths []string
 
-		cmd := exec.Command("git", cmdArgs...)
-		cmd.Dir = path
-
-		fmt.Printf("执行目录: %s\n", path)
-		fmt.Printf("执行命令: git %s\n", command)
-
-		output, err := cmd.Output()
-		if err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				fmt.Printf("命令执行错误: %v\n", string(exitErr.Stderr))
-			} else {
-				fmt.Printf("其他错误: %v\n", err)
+		// 检查路径是否以 '/' 结尾
+		if strings.HasSuffix(path, "/") {
+			// 读取目录下的所有子目录
+			entries, err := os.ReadDir(path)
+			if err != nil {
+				fmt.Printf("读取目录错误 %s: %v\n", path, err)
+				continue
 			}
-			continue
-		}
 
-		if output != nil {
-			// 按行分割输出
-			lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-
-			// 对每一行进行去重处理
-			var uniqueLines []string
-			for _, line := range lines {
-				line = strings.TrimSpace(line)
-				if line != "" && !uniqueResults[line] {
-					uniqueResults[line] = true
-					uniqueLines = append(uniqueLines, line)
+			// 遍历子目录
+			for _, entry := range entries {
+				if entry.IsDir() {
+					projectPaths = append(projectPaths, filepath.Join(path, entry.Name()))
 				}
 			}
+		} else {
+			// 单个项目路径
+			projectPaths = append(projectPaths, path)
+		}
 
-			// 只有当有唯一的行时才添加到结果中
-			if len(uniqueLines) > 0 {
-				result := strings.Join(uniqueLines, "\n")
-				//results = append(results, fmt.Sprintf("=== %s ===\n%s", path, result))
-				results = append(results, fmt.Sprintf("\n%s", result))
+		// 处理所有项目路径
+		for _, projectPath := range projectPaths {
+			// 检查是否为 Git 仓库
+			if !isGitRepo(projectPath) {
+				fmt.Printf("跳过非 Git 仓库: %s\n", projectPath)
+				continue
+			}
+
+			cmdArgs := parseGitCommand(command)
+			cmd := exec.Command("git", cmdArgs...)
+			cmd.Dir = projectPath
+
+			fmt.Printf("执行目录: %s\n", projectPath)
+			fmt.Printf("执行命令: git %s\n", command)
+
+			output, err := cmd.Output()
+			if err != nil {
+				if exitErr, ok := err.(*exec.ExitError); ok {
+					fmt.Printf("命令执行错误: %v\n", string(exitErr.Stderr))
+				} else {
+					fmt.Printf("其他错误: %v\n", err)
+				}
+				continue
+			}
+
+			if output != nil {
+				lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+				var uniqueLines []string
+				for _, line := range lines {
+					line = strings.TrimSpace(line)
+					if line != "" && !uniqueResults[line] {
+						uniqueResults[line] = true
+						uniqueLines = append(uniqueLines, line)
+					}
+				}
+
+				if len(uniqueLines) > 0 {
+					result := strings.Join(uniqueLines, "\n")
+					results = append(results, fmt.Sprintf("\n%s", result))
+				}
 			}
 		}
 	}
 
 	return strings.Join(results, "\n\n")
+}
+
+// isGitRepo 检查指定路径是否为 Git 仓库
+func isGitRepo(path string) bool {
+	gitPath := filepath.Join(path, ".git")
+	_, err := os.Stat(gitPath)
+	return err == nil
 }
 
 // parseGitCommand 解析git命令字符串为参数数组
