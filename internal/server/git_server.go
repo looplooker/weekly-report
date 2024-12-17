@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 )
 
 func getCommit(paths string, command string) string {
@@ -92,6 +93,13 @@ func isGitRepo(path string) bool {
 
 // parseGitCommand 解析git命令字符串为参数数组
 func parseGitCommand(command string) []string {
+	// 确保输入字符串是UTF-8编码
+	if !utf8.ValidString(command) {
+		// 尝试将字符串从系统默认编码转换为UTF-8
+		bytes := []byte(command)
+		command = string(bytes)
+	}
+
 	var args []string
 	var current strings.Builder
 	inQuote := false
