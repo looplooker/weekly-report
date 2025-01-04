@@ -1,4 +1,4 @@
-package server
+package commit
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-func getCommit(paths string, command string) string {
+func GetCommit(paths string, command string) string {
 	pathList := strings.Fields(paths)
 	uniqueResults := make(map[string]bool)
 	var results []string

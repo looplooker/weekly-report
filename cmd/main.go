@@ -30,11 +30,11 @@ func main() {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	sendkey := os.Getenv("SEND_KEY")
-	title := "新鲜的周报出炉啦~"
-	ai := server.NewAi()
+	ai := server.NewAi(os.Getenv("AI_PROVIDER"))
 	desp := ai.GetReport(*paths, *command)
 
+	sendkey := os.Getenv("SEND_KEY")
+	title := "新鲜的周报出炉啦~"
 	resp, err := server.ScSend(sendkey, title, desp, nil)
 	if err != nil {
 		log.Fatal("Error:", err)

@@ -43,3 +43,6 @@ make build
 ## 资源
 - [Server酱](https://sct.ftqq.com/) 微信推送
 - [CURSOR](https://www.cursor.com/) The AI Code Editor
+
+## 后续
+- [x] 已支持 DeepSeek，可在 env 文件中切换，DeepSeek 需要自定义 prompt
