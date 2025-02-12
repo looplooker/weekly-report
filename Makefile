@@ -3,6 +3,7 @@
 build:
 	@echo "Building..."
 	@go build -o weekly-report.exe cmd/main.go
+	@echo "Finish..."
 
 # Run the application
 run:

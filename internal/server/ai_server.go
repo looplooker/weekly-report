@@ -12,6 +12,8 @@ func NewAi(p string) Ai {
 		return provider.NewGlm()
 	case "deepseek":
 		return provider.NewDeep()
+	case "aihub":
+		return provider.NewHub()
 	}
 
 	return nil
